@@ -1,0 +1,16 @@
+{
+  "name": "SocketProxy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Posttwo",
+  "license": "MIT",
+  "dependencies": {
+    "better-console": "^1.0.1",
+    "better-log": "^1.3.3",
+    "cli-table": "^0.3.1",
+    "home-assistant-js-websocket": "^1.1.2",
+    "socket.io": "^2.0.4",
+    "socketio-auth": "^0.1.0",
+    "ws": "^3.3.3"
+  }
+}
