@@ -1,8 +1,18 @@
 var console = require('better-console');
-//const WebSocket = require('ws');
-//const wss = new WebSocket.Server({ port: 8080 });
+
+//WebSocket HAAS
 var HomeAssistant = require('./haas.js');
 var HAAS = new HomeAssistant();
+
+//WebAPI Hass
+const HassWebApi = require('homeassistant');
+const WebApi = new HassWebApi({
+    host: 'https://hass-local.posttwo.pt',
+    ignoreCert: true,
+});
+
+//console.log(WebApi.states.get('light', 'matt'))
+//SocketIO Server
 var server = require('http').createServer();
 var io = require('socket.io')(server);
 
@@ -43,7 +53,7 @@ HAAS.events().on("state_changed", (event) => {
         ["Old State", o.state], 
         ["Time", e.last_changed],
     ]);
-    console.log(JSON.stringify(e.attributes));
+    //console.log(JSON.stringify(e.attributes));
     io.emit(e.entity_id, event);
 });
 
@@ -59,24 +69,10 @@ HAAS.events().on("haas_connected", (event) => {
 })
 io.on('connection', function connection(client) {
     console.log("CONNECTED", client.handshake.address);
-    //initial connection info
-    /*HAAS.conn().getStates().then(ent => {
-        ent.forEach(function(e){
-            console.log(e);
-            console.log('---');
-            let state = {
-                "data": {
-                    "new_state": {
-                        "state": e.state,
-                        "attributes": e.attributes
-                    }
-                }
-            }
-            client.emit(e.entity_id, state)
-        })
-    })*/
+
+    //@DEPRECATED | Replaced with get_state singular
     client.on("get_states", (obj) => {
-        console.log("ASKING FOR STATES");
+        console.error("holy shit someone asked for all the fucking states");
         HAAS.conn().getStates().then(ent => {
             ent.forEach(function(e){
                 console.log(e);
@@ -91,6 +87,19 @@ io.on('connection', function connection(client) {
                 }
                 client.emit(e.entity_id, state)
             })
+        })
+    })
+    client.on("get_state", (obj) => {
+        console.log("STATE REQUESTED", obj);
+        WebApi.states.get(obj.domain, obj.entity_id).then(ent => {
+            //console.log(ent);
+            let state = {
+                "data": {
+                    "new_state": ent
+                }
+            }
+            console.log("Emitting", obj.entity_id, state);
+            client.emit(state.data.new_state.entity_id, state)
         })
     })
     client.on("change_state", (obj) => {

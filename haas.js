@@ -7,7 +7,7 @@ module.exports = class HAAS{
         global.WebSocket = WebSocket;
         const HAAS = require('home-assistant-js-websocket');
 
-        HAAS.createConnection('ws://192.168.0.213:8123/api/websocket').then(
+        HAAS.createConnection('wss://hass.posttwo.pt/api/websocket').then(
             (conn) => {
               this.setInstance(conn);
               this.subscribeEvents();
